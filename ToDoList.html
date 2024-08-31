@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List with Speech Recognition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        #todo-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #todo-list li {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            background: #fff;
+        }
+        #todo-list input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .delete-btn {
+            margin-left: auto;
+            padding: 5px 10px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .delete-btn:hover {
+            background-color: #d32f2f;
+        }
+        #mic-button {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #mic-button:disabled {
+            background-color: #ddd;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>To-Do List</h1>
+        <ul id="todo-list"></ul>
+        <button id="mic-button">Start Dictation</button>
+    </div>
+
+    <script>
+        // Check for browser support
+        if (!('webkitSpeechRecognition' in window)) {
+            alert('Sorry, your browser does not support the Web Speech API. Please use Google Chrome.');
+        } else {
+            const recognition = new webkitSpeechRecognition();
+            recognition.continuous = false; // Stop after one result
+            recognition.interimResults = false; // No interim results
+
+            const todoList = document.getElementById('todo-list');
+            const micButton = document.getElementById('mic-button');
+
+            micButton.addEventListener('click', () => {
+                recognition.start();
+                micButton.disabled = true;
+                micButton.textContent = 'Listening...';
+            });
+
+            recognition.onresult = (event) => {
+                const result = event.results[0][0].transcript;
+                const li = document.createElement('li');
+
+                // Create checkbox
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+
+                // Create label for text
+                const label = document.createElement('label');
+                label.textContent = result;
+                label.style.marginRight = '10px';
+
+                // Create delete button
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.className = 'delete-btn';
+                deleteButton.addEventListener('click', () => {
+                    todoList.removeChild(li);
+                });
+
+                // Append elements to list item
+                li.appendChild(checkbox);
+                li.appendChild(label);
+                li.appendChild(deleteButton);
+                
+                // Append list item to the list
+                todoList.appendChild(li);
+
+                // Reset button
+                micButton.disabled = false;
+                micButton.textContent = 'Start Dictation';
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                micButton.disabled = false;
+                micButton.textContent = 'Start Dictation';
+            };
+
+            recognition.onend = () => {
+                micButton.disabled = false;
+                micButton.textContent = 'Start Dictation';
+            };
+        }
+    </script>
+</body>
+</html>
